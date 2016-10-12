@@ -10,10 +10,12 @@ public class PlayerController : MonoBehaviour
     public float growRatio;
     public float power;
     public int bounceLimit;
+    public int bounceAdd;
     public int needleSpeed;
     public Text bounceText;
     public Text winDieText;
     public Texture dirNeedle;
+    public Sprite shieldSprite;
     
 
     // constants
@@ -27,12 +29,14 @@ public class PlayerController : MonoBehaviour
 	private bool ifSlippery;
 	private bool ifCollided;
     private bool isDead;
+    private bool isShield;
     private bool isWin;
-    private Rigidbody2D rb;
-	private Transform tf;
     private int angle;
     private int bounceCount;
+    private Rigidbody2D rb;
+	private Transform tf;
     private Vector2 midScreen;
+    private SpriteRenderer sr;
     
 
     void Start()
@@ -43,6 +47,7 @@ public class PlayerController : MonoBehaviour
 		ifFriction = false;
 		ifCollided = false;
 		ifSlippery = false;
+        isShield = false;
         isDead = false;
         isWin = false;
         bounceCount = bounceLimit;
@@ -50,6 +55,7 @@ public class PlayerController : MonoBehaviour
         winDieText.text = "";
 		Debug.Log ("started\t");
         midScreen = new Vector2(Screen.width / 2, Screen.height / 2);
+        sr = GetComponent<SpriteRenderer>();
 
     }
 
@@ -119,7 +125,13 @@ public class PlayerController : MonoBehaviour
             other.gameObject.SetActive(false);
             GameObject.FindGameObjectWithTag("Gate").SetActive(false);
         }
-        else if (other.gameObject.CompareTag("Pickup"))
+        else if (other.gameObject.CompareTag("AddBounce"))
+        {
+            other.gameObject.SetActive(false);
+            bounceCount += bounceAdd;
+            bounceText.text = BOUNCE_STR + bounceCount;
+        }
+        else if (other.gameObject.CompareTag("Pickup") && !isShield)
         {
             other.gameObject.SetActive(false);
             tf = GetComponent<Transform>();
@@ -130,6 +142,12 @@ public class PlayerController : MonoBehaviour
             other.gameObject.SetActive(false);
             tf = GetComponent<Transform>();
             tf.localScale /= growRatio;
+        }
+        else if (other.gameObject.CompareTag("Shield"))
+        {
+            other.gameObject.SetActive(false);
+            isShield = true;
+            sr.sprite = shieldSprite;
         }
         else if (other.gameObject.CompareTag("Goal"))
         {
