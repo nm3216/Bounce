@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class PlayerController : MonoBehaviour
@@ -13,14 +14,24 @@ public class PlayerController : MonoBehaviour
     public int bounceAdd;
     public int needleSpeed;
     public Text bounceText;
-    public Text winDieText;
+    public Text starText;
     public Texture dirNeedle;
+    public RawImage promptImg;
+    public Texture goImg;
+    public Texture gameOverImg;
     public Sprite shieldSprite;
+    public Sprite bounceSprite;
+    public Sprite normalSprite;
+    public Sprite deadSprite;
+    public Sprite smokeSprite;
+    public SpriteRenderer shieldRenderer;
+    public SpriteRenderer smokeRenderer;
     
 
     // constants
-    private const string BOUNCE_STR = "Bounces left = ";
+    private const string BOUNCE_STR = "Bounces left: ";
     private const string NO_BOUNCE_STR = "No bounces left!";
+    private const string STAR_STR = "Stars: ";
     private const string DIE_STR = "YOU DIED!!";
     private const string WIN_STR = "YOU WIN! Next level >>";
     
@@ -33,11 +44,14 @@ public class PlayerController : MonoBehaviour
     private bool isWin;
     private int angle;
     private int bounceCount;
+    private int starCount;
     private Rigidbody2D rb;
 	private Transform tf;
     private Vector2 midScreen;
     private SpriteRenderer sr;
-    
+    private float bounceTimer;
+    private float startTimer;
+    private float smokeTimer;
 
     void Start()
     {
@@ -50,9 +64,10 @@ public class PlayerController : MonoBehaviour
         isShield = false;
         isDead = false;
         isWin = false;
+        starCount = 0;
         bounceCount = bounceLimit;
         bounceText.text = BOUNCE_STR + bounceCount;
-        winDieText.text = "";
+        startTimer = 4;
 		Debug.Log ("started\t");
         midScreen = new Vector2(Screen.width / 2, Screen.height / 2);
         sr = GetComponent<SpriteRenderer>();
@@ -69,11 +84,14 @@ public class PlayerController : MonoBehaviour
     {
         if (isWin)
         {
-            winDieText.text = WIN_STR;
+            SceneManager.LoadScene("Level2", LoadSceneMode.Single);
         } else if (isDead) {
-            winDieText.text = DIE_STR;
+            sr.sprite = deadSprite;
+            promptImg.texture = gameOverImg;
+            promptImg.gameObject.SetActive(true);
+            
         } else {
-            angle = (angle + needleSpeed) % 360;
+            
 		    if (ifSlippery == true) {
 			    rb.drag = 0.01f;
 		    }
@@ -85,8 +103,17 @@ public class PlayerController : MonoBehaviour
 
 		    if (ifCollided == true) {
                 shrinkPlayer();
+                sr.sprite = bounceSprite;
+                bounceTimer = 0.2f;
 			    ifCollided = false;
-		    }
+            }
+            else
+            {
+                if (bounceTimer <= 0)
+                    sr.sprite = normalSprite;
+                else
+                    bounceTimer -= Time.deltaTime;
+            }
 
             if (Input.GetKeyDown("space"))
             {
@@ -95,13 +122,31 @@ public class PlayerController : MonoBehaviour
                 float moveVertical = Mathf.Cos(angleRad);
                 Vector2 movement = new Vector2(moveHorizontal, moveVertical);
                 rb.AddForce(movement * power );
+                updateBounce();
             }
 
+            if (startTimer <= 2 && startTimer > 0)
+            {
+                promptImg.texture = goImg;
+            }
+            else if (startTimer <= 0)
+            {
+                promptImg.gameObject.SetActive(false);
+            }
+
+            if (smokeTimer <= 0)
+            {
+                smokeRenderer.sprite = null;
+            }
+
+            angle = (angle + needleSpeed) % 360;
+            startTimer -= Time.deltaTime;
+            smokeTimer -= Time.deltaTime;
 
         }
     }
 
-    void UpdateBounce() {
+    void updateBounce() {
         bounceCount--;
         if (bounceCount <= 0) {
             bounceText.text = NO_BOUNCE_STR;
@@ -124,7 +169,7 @@ public class PlayerController : MonoBehaviour
         } else if (other.gameObject.CompareTag("OpenSesame")) {
             other.gameObject.SetActive(false);
             GameObject.FindGameObjectWithTag("Gate").SetActive(false);
-        }
+        } 
         else if (other.gameObject.CompareTag("AddBounce"))
         {
             other.gameObject.SetActive(false);
@@ -142,18 +187,38 @@ public class PlayerController : MonoBehaviour
             other.gameObject.SetActive(false);
             tf = GetComponent<Transform>();
             tf.localScale /= growRatio;
+            smokeRenderer.sprite = smokeSprite;
+            smokeTimer = 1;
         }
         else if (other.gameObject.CompareTag("Shield"))
         {
             other.gameObject.SetActive(false);
-            isShield = true;
-            sr.sprite = shieldSprite;
+            shieldRenderer.sprite = shieldSprite;
+            isShield = true; 
         }
         else if (other.gameObject.CompareTag("Goal"))
         {
             isWin = true;
         }
+        else if (other.gameObject.CompareTag("Star"))
+        {
+            other.gameObject.SetActive(false);
+            updateStar();
+        }
 
+    }
+
+    void updateStar()
+    {
+        starCount++;
+        if (starCount >= 5)
+        {
+            bounceCount++;
+            bounceText.text = BOUNCE_STR + bounceCount;
+            starCount -= 5;
+        }
+        
+        starText.text = STAR_STR + starCount;
     }
 
     void shrinkPlayer()
@@ -161,7 +226,7 @@ public class PlayerController : MonoBehaviour
         tf = GetComponent<Transform>();
         Vector2 baseSize2D = new Vector2(baseSize, baseSize);
         tf.localScale = shrinkRatio * ((Vector2)tf.localScale - baseSize2D) + baseSize2D;
-        UpdateBounce();
+       
     }
 
     void OnCollisionEnter2D(Collision2D collision)

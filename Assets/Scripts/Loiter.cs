@@ -20,7 +20,6 @@ public class Loiter : MonoBehaviour {
         
 
         float displacement = tr.position.y - initialPos;
-        Debug.Log(tr.position.y + " " + initialPos + " " + displacement);
 
         if (displacement > 2)
         {
