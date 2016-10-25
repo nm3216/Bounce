@@ -13,19 +13,22 @@ public class PlayerController : MonoBehaviour
     public int bounceLimit;
     public int bounceAdd;
     public int needleSpeed;
+    public Transform needleDir;
     public Text bounceText;
     public Text starText;
-    public Texture dirNeedle;
     public RawImage promptImg;
     public Texture goImg;
     public Texture gameOverImg;
+    public Texture lifeIcon;
     public Sprite shieldSprite;
     public Sprite bounceSprite;
     public Sprite normalSprite;
     public Sprite deadSprite;
     public Sprite smokeSprite;
+    public Sprite winSprite;
     public SpriteRenderer shieldRenderer;
     public SpriteRenderer smokeRenderer;
+    public Slider starBar;
     
 
     // constants
@@ -42,22 +45,21 @@ public class PlayerController : MonoBehaviour
     private bool isDead;
     private bool isShield;
     private bool isWin;
-    private int angle;
     private int bounceCount;
     private int starCount;
     private Rigidbody2D rb;
 	private Transform tf;
-    private Vector2 midScreen;
+    private Vector2 screenCorner;
     private SpriteRenderer sr;
     private float bounceTimer;
     private float startTimer;
     private float smokeTimer;
+    private float winTimer;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
 
-        angle = 0;
 		ifFriction = false;
 		ifCollided = false;
 		ifSlippery = false;
@@ -68,23 +70,27 @@ public class PlayerController : MonoBehaviour
         bounceCount = bounceLimit;
         bounceText.text = BOUNCE_STR + bounceCount;
         startTimer = 4;
+        winTimer = 2;
 		Debug.Log ("started\t");
-        midScreen = new Vector2(Screen.width / 2, Screen.height / 2);
+        screenCorner = new Vector2(0, Screen.height);
         sr = GetComponent<SpriteRenderer>();
 
-    }
-
-    void OnGUI()
-    {
-        GUIUtility.RotateAroundPivot(angle, midScreen);
-        GUI.DrawTexture(new Rect(midScreen.x - 50, midScreen.y -50, 50, 50), dirNeedle);
     }
 
     void FixedUpdate()
     {
         if (isWin)
         {
-            SceneManager.LoadScene("Level2", LoadSceneMode.Single);
+            if (winTimer <= 0)
+            {
+                SceneManager.LoadScene("Level2", LoadSceneMode.Single);
+            }
+            else
+            {
+                sr.sprite = winSprite;
+                winTimer -= Time.deltaTime;
+            }
+            
         } else if (isDead) {
             sr.sprite = deadSprite;
             promptImg.texture = gameOverImg;
@@ -116,11 +122,8 @@ public class PlayerController : MonoBehaviour
             }
 
             if (Input.GetKeyDown("space"))
-            {
-                float angleRad = angle * Mathf.Deg2Rad;
-                float moveHorizontal = Mathf.Sin(angleRad);
-                float moveVertical = Mathf.Cos(angleRad);
-                Vector2 movement = new Vector2(moveHorizontal, moveVertical);
+            {   
+                Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
                 rb.AddForce(movement * power );
                 updateBounce();
             }
@@ -139,11 +142,20 @@ public class PlayerController : MonoBehaviour
                 smokeRenderer.sprite = null;
             }
 
-            angle = (angle + needleSpeed) % 360;
             startTimer -= Time.deltaTime;
             smokeTimer -= Time.deltaTime;
 
         }
+    }
+
+    void OnGUI()
+
+    {
+        for (int i = 0; i < bounceCount; i++)
+        {
+            GUI.DrawTexture(new Rect(screenCorner.x + 10 + 30 * i, screenCorner.y - 60, 20, 20), lifeIcon);
+        }
+        
     }
 
     void updateBounce() {
@@ -154,6 +166,7 @@ public class PlayerController : MonoBehaviour
         } else {
             bounceText.text = BOUNCE_STR + bounceCount;
         }
+        
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -218,7 +231,7 @@ public class PlayerController : MonoBehaviour
             starCount -= 5;
         }
         
-        starText.text = STAR_STR + starCount;
+        starBar.value = starCount;
     }
 
     void shrinkPlayer()
