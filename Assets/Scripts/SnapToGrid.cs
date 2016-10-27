@@ -7,7 +7,7 @@ using System.Collections;
 [ExecuteInEditMode]
 public class SnapToGrid : MonoBehaviour {
 	
-	public float cell_size = 1f;
+	public const float cell_size = 1f;
 	private float x, y, z;
 	
 	void Start() {

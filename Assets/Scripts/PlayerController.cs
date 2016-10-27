@@ -15,7 +15,6 @@ public class PlayerController : MonoBehaviour
     public int needleSpeed;
     public Transform needleDir;
     public Text bounceText;
-    public Text starText;
     public RawImage promptImg;
     public Texture goImg;
     public Texture gameOverImg;
@@ -74,7 +73,6 @@ public class PlayerController : MonoBehaviour
 		Debug.Log ("started\t");
         screenCorner = new Vector2(0, Screen.height);
         sr = GetComponent<SpriteRenderer>();
-
     }
 
     void FixedUpdate()
@@ -115,8 +113,9 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                if (bounceTimer <= 0)
+                if (bounceTimer <= 0) {
                     sr.sprite = normalSprite;
+                }
                 else
                     bounceTimer -= Time.deltaTime;
             }
