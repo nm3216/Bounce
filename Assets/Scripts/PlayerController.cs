@@ -28,6 +28,20 @@ public class PlayerController : MonoBehaviour
     public SpriteRenderer shieldRenderer;
     public SpriteRenderer smokeRenderer;
     public Slider starBar;
+
+	public AudioClip bounceSound;
+	public AudioClip getStar;
+	public AudioClip meetMonsterSound;
+	public AudioClip slipSound;
+	public AudioClip frictionSound;
+	public AudioClip victorySound;
+	public AudioClip openDoorSound;
+	public AudioClip levelStartSound;
+	public AudioClip defeatedSound;
+	public AudioClip powerSound;
+	public AudioClip getthinSound;
+	public float bounceSoundVol;
+
     
 
     // constants
@@ -73,6 +87,7 @@ public class PlayerController : MonoBehaviour
 		Debug.Log ("started\t");
         screenCorner = new Vector2(0, Screen.height);
         sr = GetComponent<SpriteRenderer>();
+		playSound (levelStartSound);
     }
 
     void FixedUpdate()
@@ -159,9 +174,12 @@ public class PlayerController : MonoBehaviour
 
     void updateBounce() {
         bounceCount--;
+		if (isDead)
+			return;
         if (bounceCount <= 0) {
             bounceText.text = NO_BOUNCE_STR;
             isDead = true;
+			playSound (defeatedSound);
         } else {
             bounceText.text = BOUNCE_STR + bounceCount;
         }
@@ -173,26 +191,31 @@ public class PlayerController : MonoBehaviour
 		if (other.gameObject.CompareTag ("Friction")) {
 			ifFriction = true;
 			ifSlippery = false;
+			playSound (frictionSound);
 		} else if (other.gameObject.CompareTag ("NonFriction")) {
 			ifFriction = false;
 			ifSlippery = false;
 		} else if (other.gameObject.CompareTag ("Slippery")) {
 			ifSlippery = true;
+			playSound (slipSound);
         } else if (other.gameObject.CompareTag("OpenSesame")) {
             other.gameObject.SetActive(false);
             GameObject.FindGameObjectWithTag("Gate").SetActive(false);
+			playSound (openDoorSound);
         } 
         else if (other.gameObject.CompareTag("AddBounce"))
         {
             other.gameObject.SetActive(false);
             bounceCount += bounceAdd;
             bounceText.text = BOUNCE_STR + bounceCount;
+			playSound (powerSound);
         }
         else if (other.gameObject.CompareTag("Pickup") && !isShield)
         {
             other.gameObject.SetActive(false);
             tf = GetComponent<Transform>();
             tf.localScale *= growRatio;
+			playSound (powerSound);
         }
         else if (other.gameObject.CompareTag("Getthin"))
         {
@@ -201,20 +224,24 @@ public class PlayerController : MonoBehaviour
             tf.localScale /= growRatio;
             smokeRenderer.sprite = smokeSprite;
             smokeTimer = 1;
+			playSound (getthinSound);
         }
         else if (other.gameObject.CompareTag("Shield"))
         {
             other.gameObject.SetActive(false);
             shieldRenderer.sprite = shieldSprite;
             isShield = true; 
+			playSound (powerSound);
         }
         else if (other.gameObject.CompareTag("Goal"))
         {
             isWin = true;
+			playSound (victorySound);
         }
         else if (other.gameObject.CompareTag("Star"))
         {
             other.gameObject.SetActive(false);
+			playSound (getStar);
             updateStar();
         }
 
@@ -244,10 +271,17 @@ public class PlayerController : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         Collider2D other = collision.collider;
-        if (other.gameObject.CompareTag("Wall"))
-        {
+		if (other.gameObject.CompareTag ("Wall")) {
 			ifCollided = true;
+			playSound(bounceSound);
+		} else if (other.gameObject.CompareTag ("WallNoShrink")) {
+			playSound(bounceSound);
 		}
-    }		
+    }
+
+	void playSound(AudioClip audio)
+	{
+		AudioSource.PlayClipAtPoint(audio,transform.position,1.0f);
+	}
 
 }
