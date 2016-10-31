@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
     public SpriteRenderer shieldRenderer;
     public SpriteRenderer smokeRenderer;
     public Slider starBar;
+	public GameObject restartButton;
+	public GameObject menuButton;
+
 
 	public AudioClip bounceSound;
 	public AudioClip getStar;
@@ -90,6 +93,8 @@ public class PlayerController : MonoBehaviour
         screenCorner = new Vector2(0, Screen.height);
         sr = GetComponent<SpriteRenderer>();
 		playSound (levelStartSound);
+		menuButton.gameObject.SetActive (false);
+		restartButton.gameObject.SetActive (false);
     }
 
     void FixedUpdate()
@@ -112,6 +117,9 @@ public class PlayerController : MonoBehaviour
             sr.sprite = deadSprite;
             promptImg.texture = gameOverImg;
             promptImg.gameObject.SetActive(true);
+			menuButton.gameObject.SetActive (true);
+			restartButton.gameObject.SetActive (true);
+
             
         } else {
             
