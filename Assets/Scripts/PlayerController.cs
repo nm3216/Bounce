@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public Sprite deadSprite;
     public Sprite smokeSprite;
     public Sprite winSprite;
+    public Sprite frictionSprite;
     public SpriteRenderer shieldRenderer;
     public SpriteRenderer smokeRenderer;
     public Slider starBar;
@@ -50,6 +51,7 @@ public class PlayerController : MonoBehaviour
     private const string STAR_STR = "Stars: ";
     private const string DIE_STR = "YOU DIED!!";
     private const string WIN_STR = "YOU WIN! Next level >>";
+    private const int LAST_LEVEL = 3;
     
 
 	private bool ifFriction;
@@ -96,7 +98,9 @@ public class PlayerController : MonoBehaviour
         {
             if (winTimer <= 0)
             {
-                SceneManager.LoadScene("Level2", LoadSceneMode.Single);
+                Scene currScene = SceneManager.GetActiveScene();
+                if (currScene.buildIndex < LAST_LEVEL) // not last scene yet
+                    SceneManager.LoadScene(currScene.buildIndex + 1, LoadSceneMode.Single);
             }
             else
             {
@@ -116,6 +120,7 @@ public class PlayerController : MonoBehaviour
 		    }
 		    else if (ifFriction == true) {
 			    rb.drag = 3;
+                sr.sprite = frictionSprite;
 		    } else if (ifSlippery == false && ifFriction == false){
 			    rb.drag = 1f;
 		    }
@@ -126,16 +131,15 @@ public class PlayerController : MonoBehaviour
                 bounceTimer = 0.2f;
 			    ifCollided = false;
             }
-            else
-            {
-                if (bounceTimer <= 0) {
-                    sr.sprite = normalSprite;
-                }
-                else
-                    bounceTimer -= Time.deltaTime;
+           
+            if (bounceTimer <= 0) {
+                sr.sprite = normalSprite;
             }
+            else
+                bounceTimer -= Time.deltaTime;
+           
 
-            if (Input.GetKeyDown("space"))
+            if (Input.GetKeyDown("space") || Input.touchCount > 0)
             {   
                 Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
                 rb.AddForce(movement * power );
@@ -215,6 +219,8 @@ public class PlayerController : MonoBehaviour
             other.gameObject.SetActive(false);
             tf = GetComponent<Transform>();
             tf.localScale *= growRatio;
+            smokeRenderer.sprite = smokeSprite;
+            smokeTimer = 1;
 			playSound (powerSound);
         }
         else if (other.gameObject.CompareTag("Getthin"))
