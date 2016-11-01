@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
@@ -96,6 +96,16 @@ public class PlayerController : MonoBehaviour
 		menuButton.gameObject.SetActive (false);
 		restartButton.gameObject.SetActive (false);
     }
+    void Update()
+{
+if (Input.GetKeyDown("z") || Input.touchCount > 0)
+            {   
+                Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
+                rb.AddForce(movement * power );
+                updateBounce();
+            }
+
+}
 
     void FixedUpdate()
     {
@@ -147,13 +157,7 @@ public class PlayerController : MonoBehaviour
                 bounceTimer -= Time.deltaTime;
            
 
-            if (Input.GetKeyDown("space") || Input.touchCount > 0)
-            {   
-                Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
-                rb.AddForce(movement * power );
-                updateBounce();
-            }
-
+            
             if (startTimer <= 2 && startTimer > 0)
             {
                 promptImg.texture = goImg;
@@ -299,3 +303,4 @@ public class PlayerController : MonoBehaviour
 	}
 
 }
+
