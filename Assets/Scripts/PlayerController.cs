@@ -54,7 +54,7 @@ public class PlayerController : MonoBehaviour
     private const string STAR_STR = "Stars: ";
     private const string DIE_STR = "YOU DIED!!";
     private const string WIN_STR = "YOU WIN! Next level >>";
-    private const int LAST_LEVEL = 3;
+    private const int LAST_LEVEL = 12;
     
 
 	private bool ifFriction;
