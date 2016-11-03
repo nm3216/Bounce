@@ -73,6 +73,7 @@ public class PlayerController : MonoBehaviour
     private float startTimer;
     private float smokeTimer;
     private float winTimer;
+    private float dieTimer;
 
     void Start()
     {
@@ -89,6 +90,7 @@ public class PlayerController : MonoBehaviour
         bounceText.text = BOUNCE_STR + bounceCount;
         startTimer = 4;
         winTimer = 2;
+        dieTimer = 3;
 		Debug.Log ("started\t");
         screenCorner = new Vector2(0, Screen.height);
         sr = GetComponent<SpriteRenderer>();
@@ -96,16 +98,30 @@ public class PlayerController : MonoBehaviour
 		menuButton.gameObject.SetActive (false);
 		restartButton.gameObject.SetActive (false);
     }
+    
     void Update()
-{
-if (Input.GetKeyDown("z") || Input.touchCount > 0)
-            {   
-                Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
-                rb.AddForce(movement * power );
-                updateBounce();
-            }
+    {
+        if ((!isWin && !isDead) && (Input.GetKeyDown("space") || Input.touchCount > 0))
+        {   
+            Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
+            rb.AddForce(movement * power );
+            updateBounce();
+        }
 
-}
+        if (bounceCount == 0)
+        {
+            if (dieTimer <= 0)
+                updateBounce();
+            else
+                dieTimer -= Time.deltaTime;
+        }
+
+        if (ifFriction)
+            sr.sprite = frictionSprite;
+        else
+            sr.sprite = normalSprite;
+
+    }
 
     void FixedUpdate()
     {
@@ -138,7 +154,7 @@ if (Input.GetKeyDown("z") || Input.touchCount > 0)
 		    }
 		    else if (ifFriction == true) {
 			    rb.drag = 3;
-                sr.sprite = frictionSprite;
+                
 		    } else if (ifSlippery == false && ifFriction == false){
 			    rb.drag = 1f;
 		    }
@@ -192,7 +208,7 @@ if (Input.GetKeyDown("z") || Input.touchCount > 0)
         bounceCount--;
 		if (isDead)
 			return;
-        if (bounceCount <= 0) {
+        if (bounceCount < 0) {
             bounceText.text = NO_BOUNCE_STR;
             isDead = true;
 			playSound (defeatedSound);
@@ -226,14 +242,21 @@ if (Input.GetKeyDown("z") || Input.touchCount > 0)
             bounceText.text = BOUNCE_STR + bounceCount;
 			playSound (powerSound);
         }
-        else if (other.gameObject.CompareTag("Pickup") && !isShield)
+        else if (other.gameObject.CompareTag("Pickup"))
         {
-            other.gameObject.SetActive(false);
-            tf = GetComponent<Transform>();
-            tf.localScale *= growRatio;
-            smokeRenderer.sprite = smokeSprite;
-            smokeTimer = 1;
-			playSound (powerSound);
+            if (isShield)
+            {
+                isShield = false;
+                shieldRenderer.sprite = null;
+            }
+            else { 
+                other.gameObject.SetActive(false);
+                tf = GetComponent<Transform>();
+                tf.localScale *= growRatio;
+                smokeRenderer.sprite = smokeSprite;
+                smokeTimer = 1;
+			    playSound (powerSound);
+            }
         }
         else if (other.gameObject.CompareTag("Getthin"))
         {
