@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     // public variables
     public float baseSize;
     public float shrinkRatio;
+    public float pShrinkRatio;
     public float growRatio;
     public float power;
     public int bounceLimit;
@@ -231,8 +232,6 @@ public class PlayerController : MonoBehaviour
 			ifSlippery = true;
 			playSound (slipSound);
         } else if (other.gameObject.CompareTag("OpenSesame")) {
-            other.gameObject.SetActive(false);
-            GameObject.FindGameObjectWithTag("Gate").SetActive(false);
 			playSound (openDoorSound);
         } 
         else if (other.gameObject.CompareTag("AddBounce"))
@@ -248,21 +247,24 @@ public class PlayerController : MonoBehaviour
             {
                 isShield = false;
                 shieldRenderer.sprite = null;
+				playSound (powerSound);
             }
             else { 
                 other.gameObject.SetActive(false);
                 tf = GetComponent<Transform>();
-                tf.localScale *= growRatio;
+				if (tf.localScale.x < 2.5) {
+					tf.localScale *= growRatio;
+				}
                 smokeRenderer.sprite = smokeSprite;
                 smokeTimer = 1;
-			    playSound (powerSound);
+				playSound (meetMonsterSound);
             }
         }
         else if (other.gameObject.CompareTag("Getthin"))
         {
             other.gameObject.SetActive(false);
             tf = GetComponent<Transform>();
-            tf.localScale /= growRatio;
+            tf.localScale /= pShrinkRatio;
             smokeRenderer.sprite = smokeSprite;
             smokeTimer = 1;
 			playSound (getthinSound);
@@ -317,7 +319,10 @@ public class PlayerController : MonoBehaviour
 			playSound(bounceSound);
 		} else if (other.gameObject.CompareTag ("WallNoShrink")) {
 			playSound(bounceSound);
+		} else if (other.gameObject.CompareTag ("Gate")) {
+			playSound(bounceSound);
 		}
+
     }
 
 	void playSound(AudioClip audio)
