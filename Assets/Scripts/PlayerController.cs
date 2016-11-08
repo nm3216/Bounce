@@ -15,7 +15,6 @@ public class PlayerController : MonoBehaviour
     public int bounceAdd;
     public int needleSpeed;
     public Transform needleDir;
-    public Text bounceText;
     public RawImage promptImg;
     public Texture goImg;
     public Texture gameOverImg;
@@ -55,7 +54,7 @@ public class PlayerController : MonoBehaviour
     private const string STAR_STR = "Stars: ";
     private const string DIE_STR = "YOU DIED!!";
     private const string WIN_STR = "YOU WIN! Next level >>";
-    private const int LAST_LEVEL = 12;
+    private const int LAST_LEVEL = 17;
     
 
 	private bool ifFriction;
@@ -88,12 +87,10 @@ public class PlayerController : MonoBehaviour
         isWin = false;
         starCount = 0;
         bounceCount = bounceLimit;
-        bounceText.text = BOUNCE_STR + bounceCount;
-        startTimer = 4;
-        winTimer = 2;
+        startTimer = 2;
+        winTimer = 1;
         dieTimer = 3;
-		Debug.Log ("started\t");
-        screenCorner = new Vector2(0, Screen.height);
+		
         sr = GetComponent<SpriteRenderer>();
 		playSound (levelStartSound);
 		menuButton.gameObject.SetActive (false);
@@ -120,8 +117,26 @@ public class PlayerController : MonoBehaviour
 
         if (ifFriction)
             sr.sprite = frictionSprite;
-        else
-            sr.sprite = normalSprite;
+        else if (ifCollided == true)
+        {
+            shrinkPlayer();
+            sr.sprite = bounceSprite;
+            bounceTimer = 0.2f;
+            ifCollided = false;
+        }
+        else { 
+            
+            if (bounceTimer <= 0)
+            {
+                sr.sprite = normalSprite;
+            }
+            else
+                bounceTimer -= Time.deltaTime;
+            
+            //sr.sprite = normalSprite;
+           
+        }
+           
 
     }
 
@@ -161,22 +176,11 @@ public class PlayerController : MonoBehaviour
 			    rb.drag = 1f;
 		    }
 
-		    if (ifCollided == true) {
-                shrinkPlayer();
-                sr.sprite = bounceSprite;
-                bounceTimer = 0.2f;
-			    ifCollided = false;
-            }
-           
-            if (bounceTimer <= 0) {
-                sr.sprite = normalSprite;
-            }
-            else
-                bounceTimer -= Time.deltaTime;
+		    
            
 
             
-            if (startTimer <= 2 && startTimer > 0)
+            if (startTimer <= 1 && startTimer > 0)
             {
                 promptImg.texture = goImg;
             }
@@ -199,6 +203,7 @@ public class PlayerController : MonoBehaviour
     void OnGUI()
 
     {
+        screenCorner = new Vector2(0, Screen.height);
         for (int i = 0; i < bounceCount; i++)
         {
             GUI.DrawTexture(new Rect(screenCorner.x + 10 + 30 * i, screenCorner.y - 60, 20, 20), lifeIcon);
@@ -211,11 +216,8 @@ public class PlayerController : MonoBehaviour
 		if (isDead)
 			return;
         if (bounceCount < 0) {
-            bounceText.text = NO_BOUNCE_STR;
             isDead = true;
 			playSound (defeatedSound);
-        } else {
-            bounceText.text = BOUNCE_STR + bounceCount;
         }
         
     }
@@ -234,14 +236,12 @@ public class PlayerController : MonoBehaviour
 			playSound (slipSound);
         } else if (other.gameObject.CompareTag("OpenSesame")) {
             other.gameObject.SetActive(false);
-            GameObject.FindGameObjectWithTag("Gate").SetActive(false);
 			playSound (openDoorSound);
         } 
         else if (other.gameObject.CompareTag("AddBounce"))
         {
             other.gameObject.SetActive(false);
             bounceCount += bounceAdd;
-            bounceText.text = BOUNCE_STR + bounceCount;
 			playSound (powerSound);
         }
         else if (other.gameObject.CompareTag("Pickup"))
@@ -299,7 +299,6 @@ public class PlayerController : MonoBehaviour
         if (starCount >= 5)
         {
             bounceCount++;
-            bounceText.text = BOUNCE_STR + bounceCount;
             starCount -= 5;
         }
         
