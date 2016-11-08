@@ -232,6 +232,8 @@ public class PlayerController : MonoBehaviour
 			ifSlippery = true;
 			playSound (slipSound);
         } else if (other.gameObject.CompareTag("OpenSesame")) {
+            other.gameObject.SetActive(false);
+            GameObject.FindGameObjectWithTag("Gate").SetActive(false);
 			playSound (openDoorSound);
         } 
         else if (other.gameObject.CompareTag("AddBounce"))
