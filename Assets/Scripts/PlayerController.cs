@@ -102,7 +102,8 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
-        if ((!isWin && !isDead) && (Input.GetKeyDown("space") || Input.touchCount > 0))
+        if ((!isWin && !isDead) && (Input.GetKeyDown("space") || 
+            (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)))
         {   
             Vector2 movement = new Vector2(needleDir.localPosition.x, needleDir.localPosition.y);
             rb.AddForce(movement * power );
