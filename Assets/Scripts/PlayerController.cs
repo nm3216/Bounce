@@ -72,7 +72,6 @@ public class PlayerController : MonoBehaviour
     private float bounceTimer;
     private float startTimer;
     private float smokeTimer;
-    private float winTimer;
     private float dieTimer;
 
     void Start()
@@ -88,7 +87,6 @@ public class PlayerController : MonoBehaviour
         starCount = 0;
         bounceCount = bounceLimit;
         startTimer = 2;
-        winTimer = 1;
         dieTimer = 3;
 		
         sr = GetComponent<SpriteRenderer>();
@@ -144,17 +142,10 @@ public class PlayerController : MonoBehaviour
     {
         if (isWin)
         {
-            if (winTimer <= 0)
-            {
-                Scene currScene = SceneManager.GetActiveScene();
-                if (currScene.buildIndex < LAST_LEVEL) // not last scene yet
-                    SceneManager.LoadScene(currScene.buildIndex + 1, LoadSceneMode.Single);
-            }
-            else
-            {
-                sr.sprite = winSprite;
-                winTimer -= Time.deltaTime;
-            }
+        	Scene currScene = SceneManager.GetActiveScene();
+            if (currScene.buildIndex < LAST_LEVEL) // not last scene yet
+                SceneManager.LoadScene(currScene.buildIndex + 1, LoadSceneMode.Single);
+            sr.sprite = winSprite;
             
         } else if (isDead) {
             sr.sprite = deadSprite;
